@@ -5,7 +5,7 @@
 ########################################################################################
 ########################################################################################
 
-
+# README
 # all intermediary objects are saved in their own folder
 # all analyses are enclosed in logical satements allow you to run one of three ways
   # generate intermediary objects
@@ -23,20 +23,24 @@
 # time estimates are provided for some slow parts of the script
   # these are generally listes as (~x min)
   # time-estimates are super crude and for a Microsoft Surface Laptop 2 
+# not all analyses are properly fitted with a print statement
+  # some need to be added if you want the script to spit them out properly
 
 #############################
 # DIRECTORIES AND LIBRARIES #
 #############################
 
 # SET UP WORKING DIRECTORY
-wd <-'YOUR_DIRECTORY'
+wd <-'SELECT_DIRECTORY'
 setwd(wd)
 
-# You will need the following subfolders
+# you must select a working directory to give the script
+# you will need the following subfolders in your working directory
   # raw
   # intermediary
   # plots
   # tables 
+# note that raw shoudld contain all the starting files provided
 
 # raw should contain all your starting data 
 
@@ -1185,6 +1189,7 @@ if(!file.exists(paste0(wd,'/intermediary/ssWang.RData'))){
 if(!file.exists(paste0(wd,'/intermediary/giSim.RData'))){
   
   # read in the genetic interaction similarity matrix as a matrix
+  unzip(zipfile = paste0(wd,'/raw/','cc_ALL.zip'), exdir = paste0(wd,'/raw'))
   giSim <- read.delim(paste0(wd,'/raw/cc_ALL.txt'),sep='\t', header=F,check.names=F,colClasses='character')
   giSim <- giSim %>% as.matrix
   
