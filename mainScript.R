@@ -6,16 +6,17 @@
 ########################################################################################
 
 # README
+
+# do not forget to install all the libraries before trying to run this script
 # all intermediary objects are saved in their own folder
 # all analyses are enclosed in logical satements allow you to run one of three ways
   # generate intermediary objects
   # generate intermediary objects and do analyses
   # generate intermediary objects, do analyses, and generate plots 
   # you cannot do analyses without intermediary objects or generate plots without analyses
-# do the ones you want, or turn them all on by setting anlyses to T
+# do the analyses you want, or turn them all on by setting anlyses to T
 # cartoons for the paper were generated separately 
 # some figures were superficially modified in post explicitly to
-  # append p-values
   # change certain font colors
   # change spacing
   # panel figures
@@ -25,6 +26,15 @@
   # time-estimates are super crude and for a Microsoft Surface Laptop 2 
 # not all analyses are properly fitted with a print statement
   # some need to be added if you want the script to spit them out properly
+# you must select a working directory to give the script
+  # under wd you must replace SELECT_DIRECTORY with the directory you want to house this script
+# you will need the following subfolders in your selected working directory
+  # raw
+  # intermediary
+  # plots
+  # tables 
+# note that raw shoudld contain all the starting files provided
+  # the other three subfolders should be empty
 
 #############################
 # DIRECTORIES AND LIBRARIES #
@@ -33,16 +43,6 @@
 # SET UP WORKING DIRECTORY
 wd <-'SELECT_DIRECTORY'
 setwd(wd)
-
-# you must select a working directory to give the script
-# you will need the following subfolders in your working directory
-  # raw
-  # intermediary
-  # plots
-  # tables 
-# note that raw shoudld contain all the starting files provided
-
-# raw should contain all your starting data 
 
 # DECIDE IF YOU WANTS ANALYSES AND PLOTS DONE OR JUST MAKE OBJECTS
 # you cannot make plots without doing analyses
