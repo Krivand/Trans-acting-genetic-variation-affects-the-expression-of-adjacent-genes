@@ -6,44 +6,49 @@
 ########################################################################################
 
 # README
-
 # do not forget to install all the libraries before trying to run this script
 # all intermediary objects are saved in their own folder
 # all analyses are enclosed in logical satements allow you to run one of three ways
-  # generate intermediary objects
-  # generate intermediary objects and do analyses
-  # generate intermediary objects, do analyses, and generate plots 
-  # you cannot do analyses without intermediary objects or generate plots without analyses
+# # generate intermediary objects
+# # generate intermediary objects and do analyses
+# # generate intermediary objects, do analyses, and generate plots 
+# you cannot do analyses without intermediary objects or generate plots without analyses
 # do the analyses you want, or turn them all on by setting anlyses to T
 # cartoons for the paper were generated separately 
 # some figures were superficially modified in post explicitly to
-  # change certain font colors
-  # change spacing
-  # panel figures
-  # append p-values generated in this script
+# # change certain font colors
+# # change spacing
+# # panel figures
+# # append p-values generated in this script
 # time estimates are provided for some slow parts of the script
-  # these are generally listes as (~x min)
-  # time-estimates are super crude and for a Microsoft Surface Laptop 2 
+# # these are generally listes as (~x min)
+# # time-estimates are super crude and for a Microsoft Surface Laptop 2 
 # not all analyses are properly fitted with a print statement
-  # some need to be added if you want the script to spit them out properly
+# # some need to be added if you want the script to spit them out properly
 # you must select a working directory to give the script
-  # under wd you must replace SELECT_DIRECTORY with the directory you want to house this script
+# # under wd you must replace SELECT_DIRECTORY with the directory you want to house this script
 # you will need the following subfolders in your selected working directory
-  # raw
-  # intermediary
-  # plots
-  # tables 
-# note that raw shoudld contain all the starting files provided
-  # the other three subfolders should be empty
+# # raw
+# # intermediary
+# # plots
+# # tables 
+# note that raw should contain all the starting files provided
+# # the other three subfolders should only have a placeholder document in them
+# old chromatin analyses on Chereji et al. 2018, an Schep et al. 2015, are not included
+# analyses on Bergenhold overlap is not included
+# # data are held in the raw folder under the name inline-supplementary-material-4.xlsx
 
 #############################
 # DIRECTORIES AND LIBRARIES #
 #############################
 
 # SET UP WORKING DIRECTORY
-wd <-'SELECT_DIRECTORY'
+wd <-'C:/Users/vandy147/Documents/albert_lab/p01_trans_spreading/code'
 setwd(wd)
 
+# DECIDE IF YOU WANTS ANALYSES AND PLOTS DONE OR JUST MAKE OBJECTS
+# you cannot make plots without doing analyses
+# you cannot check sanity without making plots
 # DECIDE IF YOU WANTS ANALYSES AND PLOTS DONE OR JUST MAKE OBJECTS
 # you cannot make plots without doing analyses
 # you cannot check sanity without making plots
@@ -512,12 +517,11 @@ matsign <- function(x,s){
   return(x)
 }
 
+# R-BASED DOUBLET COUNTS (SLOW)
+# can act as a sanity check for the Rcpp counting logic
+# gathers targets uniquely contributing to at least 1 doublet
+# returns a named vector with the doublet count and number unique contributors 
 if(check_sanity){
-  
-  # R-BASED DOUBLET COUNTS (SLOW)
-  # can act as a sanity check for the Rcpp counting logic
-  # gathers targets uniquely contributing to at least 1 doublet
-  # returns a named vector with the doublet count and number unique contributors 
   dUniq <- function(v,c){
     u <- c()
     q <- 0
@@ -592,11 +596,11 @@ if(!(exists('metaNT') & exists('chrkey') & exists('grBodies'))){
   
   # Change factor levels
   metaNT <- mutate(metaNT,chromosome = 
-                    recode_factor(chromosome,
-                                  chrI='1',chrII='2',chrIII='3',chrIV='4',
-                                  chrV='5',chrVI='6',chrVII='7',chrVIII='8',
-                                  chrIX = '9',chrX ='10',chrXI='11',chrXII='12',
-                                  chrXIII='13',chrXIV='14',chrXV='15',chrXVI='16')) %>% 
+                     recode_factor(chromosome,
+                                   chrI='1',chrII='2',chrIII='3',chrIV='4',
+                                   chrV='5',chrVI='6',chrVII='7',chrVIII='8',
+                                   chrIX = '9',chrX ='10',chrXI='11',chrXII='12',
+                                   chrXIII='13',chrXIV='14',chrXV='15',chrXVI='16')) %>% 
     mutate(chromosome=as.numeric(as.character(chromosome)))
   
   # remove the tiled ASP3 genes and other genes found in the rRNA cluster
@@ -707,8 +711,8 @@ if(!file.exists(paste0(wd,'/intermediary/baseWeiner.RData'))){
   for(i in 2:nrow(firstNucs)){
     if(!is.na(firstNucs$nuc_id[i-1]) & !is.na(firstNucs$nuc_id[i])){
       baseWeiner[i] <- cor.test(norMark[firstNucs$nuc_id[i-1],-seq(1,151,6)],
-                        norMark[firstNucs$nuc_id[i],-seq(1,151,6)],
-                        method='spearman')$estimate
+                                norMark[firstNucs$nuc_id[i],-seq(1,151,6)],
+                                method='spearman')$estimate
     }
   }
   baseWeiner <- baseWeiner[-chrkey]
@@ -726,8 +730,8 @@ if(!file.exists(paste0(wd,'/intermediary/deltaWeiner.RData'))){
   for(i in 2:nrow(firstNucs)){
     if(!is.na(firstNucs$nuc_id[i-1]) & !is.na(firstNucs$nuc_id[i])){
       deltaWeiner[i] <- cor.test(abs(norMark[firstNucs$nuc_id[i-1],seq(4,154,6)]-norMark[firstNucs$nuc_id[i-1],seq(1,151,6)]),
-                            abs(norMark[firstNucs$nuc_id[i],seq(4,154,6)]-norMark[firstNucs$nuc_id[i],seq(1,151,6)]),
-                            method='spearman')$estimate
+                                 abs(norMark[firstNucs$nuc_id[i],seq(4,154,6)]-norMark[firstNucs$nuc_id[i],seq(1,151,6)]),
+                                 method='spearman')$estimate
     }
   }
   deltaWeiner <- deltaWeiner[-chrkey]
@@ -760,7 +764,7 @@ if(!exists('mAlbert')){
   
   # load the transcript per million counts you are going to start with
   load(paste0(wd,'/raw/tpm.RData'))
-
+  
   # load in batch and OD information with batch as factor
   covariates <- read.csv(paste0(wd,'/raw/covariates.csv'), check.names = F)
   covariates$batch <- as.factor(covariates$batch)
@@ -805,7 +809,7 @@ if(!exists('Albert18')){
   
   save(Albert18,file=paste0(wd,'/intermediary/Albert18.RData'))
   rm(eQTL_data,markers)
-
+  
 }
 
 rm(counts)
@@ -851,7 +855,7 @@ rm(mAlbert,Albert18)
 ##########################################
 
 # CLEAN UP AND PREPARE ALL EXTERNAL DATASETS FOR USE
-  # SPECIFICALLY THINK ABOUT THE FLEMING 99 BEING MORE LIKE FLEMING 02
+# SPECIFICALLY THINK ABOUT THE FLEMING 99 BEING MORE LIKE FLEMING 02
 
 if(!file.exists(paste0(wd,'/intermediary/Brem05.RData'))){
   
@@ -1009,7 +1013,7 @@ if(!file.exists(paste0(wd,'/intermediary/Myers19.RData'))){
   Myers19 <- Myers19[,-1]
   
   # conform the universe without forgetting the names
-    # note this dataset required mean normalization due to its high center
+  # # note this dataset required mean normalization due to its high center
   Myers19 <- conform_universe(Myers19,metaNT$systematic_name)
   Myers19 <- apply(Myers19,2,function(x)x-mean(x,na.rm=T))
   Myers19 <- norm_wrapper(Myers19)
@@ -1193,6 +1197,10 @@ if(!file.exists(paste0(wd,'/intermediary/giSim.RData'))){
   giSim <- read.delim(paste0(wd,'/raw/cc_ALL.txt'),sep='\t', header=F,check.names=F,colClasses='character')
   giSim <- giSim %>% as.matrix
   
+  # read in the genetic interaction similarity matrix as a matrix
+  giSim <- read.delim(paste0(wd,'/raw/cc_ALL.txt'),sep='\t', header=F,check.names=F,colClasses='character')
+  giSim <- giSim %>% as.matrix
+  
   # figure out what is unique and get names for unique entries
   uniq <- !(giSim[,2] %in% giSim[(duplicated(giSim[,2])),2])
   nUniq <- giSim[uniq,2]
@@ -1256,12 +1264,12 @@ if(do_analyses){
   max(temp)
   median(temp)
   mean(temp)
-
+  
 }
 
 # Figure out if there are any overlapping genes
-# crude and not optimized for bigger searches
-# there aren't enough to worry
+# # crude and not optimized for bigger searches
+# # there aren't enough to worry
 if(check_sanity){
   
   load(paste0(wd,'/intermediary/grBodies.RData'))
@@ -1311,7 +1319,7 @@ if(do_analyses){
   
   # The following is a sanity check to:
   # double check that doublet counts are consistent in R and Rcpp
-    # all 102 should be the same
+  # all 102 should be the same
   # this function also allows us to see how many items uniquely contribute to doublets
   if(check_sanity){
     
@@ -1325,7 +1333,7 @@ if(do_analyses){
   }
   
   # p-values comparing real data doublets to permutation doublets
-    # any p-values appearing to be zero are actually p < number_permutations
+  # # any p-values appearing to be zero are actually p < number_permutations
   b_pVals <- mapply(function(x,y)sum(x >= y)/length(x),as.data.frame(b_permutations),b_nCounts)
   
   allPerms <- as.data.frame(matrix(NA,nrow=6,ncol=6)) %>%
@@ -1363,7 +1371,7 @@ if(do_analyses){
       add_column(nAffected = nAffected) %>% add_column (obsDoublets = b_nCounts) %>%
       add_column(pVal = b_pVals) %>% 
       add_column(normalizedDoublets = rDoublets) %>%
-    write.csv(file=paste0(wd,'/tables/','SupplTable01_01_doublets.csv'))
+      write.csv(file=paste0(wd,'/tables/','SupplTable01_01_doublets.csv'))
     rm(tempTab)
     
     # get the order of the highest real doublets with respect to permutation
@@ -1556,7 +1564,7 @@ if(do_analyses){
   # binomial tests at different significance thresholds
   allPerms['Quadruplets','Bonf_Count'] <- sum(quad_pVals < 0.05/length(quad_pVals))
   allPerms['Quadruplets','Bonf_pVal'] <- binom.test(sum(quad_pVals < 0.05/length(quad_pVals)),
-                                                 length(quad_pVals),0.05/length(quad_pVals),alternative='greater')$p.value
+                                                    length(quad_pVals),0.05/length(quad_pVals),alternative='greater')$p.value
   allPerms['Quadruplets','Nom_Count'] <- sum(quad_pVals < 0.05)
   allPerms['Quadruplets','Nom_pVal'] <- binom.test(sum(quad_pVals < 0.05),length(quad_pVals),0.05,alternative='greater')$p.value
   allPerms['Quadruplets','Med_Count'] <- sum(quad_pVals < 0.5)
@@ -1599,7 +1607,7 @@ if(do_analyses){
   # binomial tests at different significance thresholds
   allPerms['Quintuplets','Bonf_Count'] <- sum(quin_pVals < 0.05/length(quin_pVals))
   allPerms['Quintuplets','Bonf_pVal'] <- binom.test(sum(quin_pVals < 0.05/length(quin_pVals)),
-                                                 length(quin_pVals),0.05/length(quin_pVals),alternative='greater')$p.value
+                                                    length(quin_pVals),0.05/length(quin_pVals),alternative='greater')$p.value
   allPerms['Quintuplets','Nom_Count'] <- sum(quin_pVals < 0.05)
   allPerms['Quintuplets','Nom_pVal'] <- binom.test(sum(quin_pVals < 0.05),length(quin_pVals),0.05,alternative='greater')$p.value
   allPerms['Quintuplets','Med_Count'] <- sum(quin_pVals < 0.5)
@@ -1641,7 +1649,7 @@ if(do_analyses){
   # binomial tests at different significance thresholds
   allPerms['Sextuplets','Bonf_Count'] <- sum(sext_pVals < 0.05/length(sext_pVals))
   allPerms['Sextuplets','Bonf_pVal'] <- binom.test(sum(sext_pVals < 0.05/length(sext_pVals)),
-                                                    length(sext_pVals),0.05/length(sext_pVals),alternative='greater')$p.value
+                                                   length(sext_pVals),0.05/length(sext_pVals),alternative='greater')$p.value
   allPerms['Sextuplets','Nom_Count'] <- sum(sext_pVals < 0.05)
   allPerms['Sextuplets','Nom_pVal'] <- binom.test(sum(sext_pVals < 0.05),length(sext_pVals),0.05,alternative='greater')$p.value
   allPerms['Sextuplets','Med_Count'] <- sum(sext_pVals < 0.5)
@@ -1666,8 +1674,8 @@ rm(sextPermutations, sextIndex)
 # finish the table with all the binomial tests
 if(make_plots){
   allPerms %>% `colnames<-`(c('p < 0.05/102 Counts','p < 0.05/102 Binomial p-Vals',
-                            'p < 0.05 Counts','p < 0.05 Binomial p-Vals',
-                            'p < 0.5 Counts','p < 0.5 Binomial p-Vals')) %>%
+                              'p < 0.05 Counts','p < 0.05 Binomial p-Vals',
+                              'p < 0.5 Counts','p < 0.5 Binomial p-Vals')) %>%
     write.csv(file=paste0(wd,'/tables/','Table01_permutationSummaries.csv'))
 }
 
@@ -1746,7 +1754,7 @@ if(do_analyses){
       mutate(Direction = ordered(Direction, levels = c('Same Direction','Different Direction','Zero'))) %>%
       gather(key='Position',value='Proportion',1:2) %>% 
       mutate(Position = ordered(Position, levels = c('Non-adjacent','Adjacent'))) %>%
-    ggplot(aes(x=Position,y=Proportion,fill=Position)) +
+      ggplot(aes(x=Position,y=Proportion,fill=Position)) +
       geom_bar(stat='Identity',  colour="black") + theme_bw() + ylim(c(0,0.6)) +
       facet_wrap('Direction') + scale_fill_grey() +
       theme(legend.position = "none", axis.title.x=element_blank(), 
@@ -1838,9 +1846,9 @@ if(!exists('nbrProps')){
 }
 
 # complete neighbor testing looking at the follwing (~31 min):
-  # if neighbors or more or less than non-neighborings
-  # for each dataset
-  # for negative, all, and positive correlations
+# if neighbors or more or less than non-neighborings
+# for each dataset
+# for negative, all, and positive correlations
 load(paste0(wd,'/intermediary/','nbrWilcoxes.RData'))
 if(!exists('nbrWilcoxes')){
   
@@ -1925,7 +1933,7 @@ if(make_plots){
   
   # shift the plot limits to make room for p-values
   limTemp <- data.frame(Metric = c("All", "All", "Positive", "Positive", 
-                                  "Negative", "Negative","Proportion","Proportion"), 
+                                   "Negative", "Negative","Proportion","Proportion"), 
                         Position = 'Adjacent', Value = c(-0.02, 0.15, 0.09, 0.5, -0.4, 0, 0.48, 0.7)) %>%
     mutate(Metric = ordered(Metric, levels = c('All','Positive','Negative','Proportion')))
   
@@ -2106,7 +2114,7 @@ if(do_analyses){
   median(bTestR$fNon) %>% print()
   median(bTestR$fNbr) %>% print()
   wilcox.test(bTestR$fNbr,bTestR$fNon,paired=T) %>% print()
-   
+  
 }
 
 rm(bTestP, bTestR, bTests)
@@ -2143,7 +2151,7 @@ if(!exists('bcor_quant')){
 # if you want to extract something
 bCorR <- apply(bcor_quant,c(1,2),function(x)x[[1]]$estimate)
 bCorP <- apply(bcor_quant,c(1,2),function(x)x[[1]]$p.value)
-  
+
 
 if(do_analyses){
   
@@ -2345,7 +2353,7 @@ if(do_analyses){
   # functional similarity 
   geneInteractionSimilarity <- neighbor_grab(giSim,chrkey)[z]
   geneOntologySimilarity <- neighbor_grab(ssWang,chrkey)[z]
-    
+  
   # provide exposure variables for both genes in each pair 
   exposure <- apply(b_mod,1,function(x)sum(x!=0))
   g1exposure <- c(NA,exposure[2:length(exposure)])[-chrkey][z]
@@ -2396,15 +2404,15 @@ if(do_analyses){
   
   # Negative binomial model with functional similarity metrics and no TF
   fxNoTF_model <- glm.nb(doubletScore ~ 
-                          PairOrientation +
-                          Closeness + 
-                          BaselineChromatin +
-                          DeltaChromatin + 
-                          geneInteractionSimilarity + 
-                          geneOntologySimilarity + 
-                          offset(log(g1exposure)) + 
-                          offset(log(g2exposure)),
-                        maxit=1000)
+                           PairOrientation +
+                           Closeness + 
+                           BaselineChromatin +
+                           DeltaChromatin + 
+                           geneInteractionSimilarity + 
+                           geneOntologySimilarity + 
+                           offset(log(g1exposure)) + 
+                           offset(log(g2exposure)),
+                         maxit=1000)
   
   fxNoTF_t3 <- fxNoTF_model %>% 
     Anova(type='III') %>%
@@ -2438,7 +2446,15 @@ if(do_analyses){
   bGlmNb_t3 <- bGlmNb_t3 %>% add_column(Factor=rownames(bGlmNb_t3)) %>%
     mutate(Significance=cut(pVals, breaks=c(-Inf,0.001,0.05,Inf), 
                             labels=c("p < 0.001","p < 0.05","p > 0.05")))
-
+  
+  # FIGURE OUT HOW MUCH THIS CORRECTS FOR
+  print((bGlmNb_model$null.deviance-bGlmNb_model$deviance)/bGlmNb_model$null.deviance)
+  
+  # HOW SIGNIFICANT IS THIS MODEL
+  nullModel <- (glm.nb(doubletScore ~ 1))
+  print(anova(bGlmNb_model,nullModel))
+  
+  
   # ANOVAS FOR EACH ORIENTATION 
   ornts <- names(table(PairOrientation))
   oModels <- rep(list(NA),length(ornts))
@@ -2510,9 +2526,7 @@ if(do_analyses){
     
     rm(aCoefs,oCoefs)
     
-    # APPLY THE SLOPE SIGNS TO THE LIKELIHOOD RATIOS FROMT HE TYPE 3 ANOVAS.
-    # COLOR IS DONE BY SIGNIFICANCE 
-    
+    # Apply slope signs to likelihood ratios from the type 3 ANOVAS
     for(i in 1:nrow(oT3s)){
       fo <- oT3s[i,which(names(oT3s) == 'Factor')]
       oo <- oT3s[i,which(names(oT3s) == 'Orientation')]
@@ -2544,9 +2558,9 @@ if(do_analyses){
         'Closeness'))) %>%
       mutate(Orientation = ordered(Orientation, levels = c('All','Divergent','Tandem','Convergent'))) %>% 
       mutate(Significance = recode(Significance, 
-             `p < 0.001` = "p < 0.001", 
-             `p < 0.05` = "0.001 \u2264 p < 0.05", 
-             `p > 0.05` = "p \u2265 0.05")) %>% 
+                                   `p < 0.001` = "p < 0.001", 
+                                   `p < 0.05` = "0.001 \u2264 p < 0.05", 
+                                   `p > 0.05` = "p \u2265 0.05")) %>% 
       ggplot(aes(Factor,y=LR_Chisq,fill=Significance)) + geom_bar(stat="identity") + theme_bw() +
       facet_wrap('Orientation', scales = "free_x") + scale_fill_grey() + ylab(bquote('Signed Likehlihood Ratio'~(X^2))) +
       theme(axis.text.x.bottom = element_text(vjust = 0.9,angle = 45, hjust = 1),
@@ -2556,7 +2570,7 @@ if(do_analyses){
            path = NULL,scale = 1,width = 7.08,height = 4,units = c("in")) 
     
   }
-   
+  
 }
 
 rm(list=ls())
