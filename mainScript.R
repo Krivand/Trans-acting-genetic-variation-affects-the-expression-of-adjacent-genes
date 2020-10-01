@@ -43,7 +43,7 @@
 #############################
 
 # SET UP WORKING DIRECTORY
-wd <-'C:/Users/vandy147/Documents/albert_lab/p01_trans_spreading/code'
+wd <-'SELECT_DIRECTORY'
 setwd(wd)
 
 # DECIDE IF YOU WANTS ANALYSES AND PLOTS DONE OR JUST MAKE OBJECTS
