@@ -2243,12 +2243,14 @@ if(do_analyses){
   median(neighbor_grab(ssWang,chrkey),na.rm=T)
   median(nonneighbor_grab(ssWang,chrkey),na.rm=T)
   wilcox.test(neighbor_grab(ssWang,chrkey),nonneighbor_grab(ssWang,chrkey))
+  cor.test(neighbor_grab(ssWang,chrkey),neighbor_grab(bplus,chrkey),method='spearman')
   
   # genetic interaction similarity 
   load(paste0(wd,'/intermediary/','giSim.RData'))
   median(neighbor_grab(giSim,chrkey),na.rm=T)
   median(nonneighbor_grab(giSim,chrkey),na.rm=T)
   wilcox.test(neighbor_grab(giSim,chrkey),nonneighbor_grab(giSim,chrkey))
+  cor.test(neighbor_grab(giSim,chrkey),neighbor_grab(bplus,chrkey),method='spearman')
   
   # are predictors colinear with distance
   cor.test(as.numeric(pOrient[-chrkey] == 'd'),neighbor_grab(intrachr_dist,chrkey),method='spearman')
@@ -2435,6 +2437,7 @@ if(do_analyses){
                            DeltaChromatin + 
                            offset(log(g1exposure)) + 
                            offset(log(g2exposure)),
+                         na.action = na.exclude,
                          maxit=1000)
   
   # Type III ANOVA of the above model
@@ -2453,6 +2456,36 @@ if(do_analyses){
   # HOW SIGNIFICANT IS THIS MODEL
   nullModel <- (glm.nb(doubletScore ~ 1))
   print(anova(bGlmNb_model,nullModel))
+  
+  # GO model 
+  modelGO <- lm(geneOntologySimilarity ~ 
+                  PairOrientation + 
+                  TFInventory + 
+                  Closeness + 
+                  BaselineChromatin + 
+                  DeltaChromatin,
+                na.action = na.exclude)
+  
+  # type II for GO
+  typeII_GO <- modelGO %>% Anova(type='II') %>% as.data.frame()
+  write.csv(typeII_GO, file=paste0(wd,'/tables/','SupplTable02_GeneOntologyModel.csv'))
+  
+  # GI model
+  modelGI <- lm(geneInteractionSimilarity ~ 
+                  PairOrientation + 
+                  TFInventory + 
+                  Closeness + 
+                  BaselineChromatin + 
+                  DeltaChromatin,
+                na.action = na.exclude)
+  
+  # type III for GO
+  typeII_GI <- modelGI %>% Anova(type='II') %>% as.data.frame()
+  write.csv(typeII_GI, file=paste0(wd,'/tables/','SupplTable02_GeneInteractionModel.csv'))
+  
+  # Residual correlations betweens residualized GO/GI models and doubletScore
+  cor.test(residuals(modelGO),doubletScore,method='spearman')
+  cor.test(residuals(modelGI),doubletScore,method='spearman')
   
   
   # ANOVAS FOR EACH ORIENTATION 
