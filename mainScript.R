@@ -37,6 +37,10 @@
 # old chromatin analyses on Chereji et al. 2018, an Schep et al. 2015, are not included
 # analyses on Bergenhold overlap is not included
 # # data are held in the raw folder under the name inline-supplementary-material-4.xlsx
+# additional analyses and figures necessary for reviewer response are held in revisionCode
+# # revisionCode should only be run after completion of the mainScript
+# # a new supplementary table_03 was added in the revision script
+# # mainScript now lacks a table_S3 as the old table_S3 is now table_S4
 
 #############################
 # DIRECTORIES AND LIBRARIES #
@@ -829,7 +833,7 @@ if(make_plots){
     theme(legend.position="bottom")  + xlab('Residual Gene Expression') + 
     ylab('Density') + ggtitle('HO')
   
-  ggsave(paste0(wd,'/plots/','SupplFigure04_ResidualExpressionHO.pdf'),plot = templot,device = NULL,
+  ggsave(paste0(wd,'/plots/','Figure_S4_ResidualExpressionHO.pdf'),plot = templot,device = NULL,
          path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
   rm(templot)
   
@@ -843,7 +847,7 @@ if(make_plots){
     theme(legend.position="bottom") + xlab('Residual Gene Expression') + 
     ylab('Density') + ggtitle('STE2')
   
-  ggsave(paste0(wd,'/plots/','SupplFigure04_ResidualExpressionSTE2.pdf'),plot = templot,device = NULL,
+  ggsave(paste0(wd,'/plots/','Figure_S4_ResidualExpressionSTE2.pdf'),plot = templot,device = NULL,
          path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
   rm(templot) 
 }
@@ -1357,7 +1361,7 @@ if(do_analyses){
   
   rm(permMedians)
   
-  # Generate Figure01 no omission permutation with visual normalization 
+  # Generate Figure_1 no omission permutation with visual normalization 
   if(make_plots){
     
     # min-median normalize everything
@@ -1371,7 +1375,7 @@ if(do_analyses){
       add_column(nAffected = nAffected) %>% add_column (obsDoublets = b_nCounts) %>%
       add_column(pVal = b_pVals) %>% 
       add_column(normalizedDoublets = rDoublets) %>%
-      write.csv(file=paste0(wd,'/tables/','SupplTable01_01_doublets.csv'))
+      write.csv(file=paste0(wd,'/tables/','Table_S2_01_doublets.csv'))
     rm(tempTab)
     
     # get the order of the highest real doublets with respect to permutation
@@ -1397,14 +1401,14 @@ if(do_analyses){
       ylab('Normalized doublet count') + xlab('Ordered hotspots')
     
     
-    ggsave(paste0(wd,'/plots/','Figure01_realVsPerm_b.pdf'),plot = templot,device = cairo_pdf,
+    ggsave(paste0(wd,'/plots/','Figure_1_realVsPerm_b.pdf'),plot = templot,device = cairo_pdf,
            path = NULL,scale = 1,width = 7.08,height = 3.5,units = c("in"))
     
     rm(temp,rDoublets,fOrder,pDoublets,templot)
     
   }
   
-  # Generate Figure01 no omission permutation with visual normalization 
+  # Generate Figure_1 no omission permutation with visual normalization 
   if(make_plots) {
     
     # min-median normalize everything
@@ -1445,7 +1449,7 @@ if(do_analyses){
              path = NULL,scale = 1,width = c,height = 7,units = c("in"))
       
     },c(F,T),
-    c(paste0(wd,'/plots/','SupplFigure01_Left.pdf'),paste0(wd,'/plots/','SupplFigure01_Right.pdf')),
+    c(paste0(wd,'/plots/','Figure_S1_Left.pdf'),paste0(wd,'/plots/','Figure_S1_Right.pdf')),
     c(5.5,1.5)
     )
     
@@ -1490,7 +1494,7 @@ if(do_analyses){
   if(make_plots){
     apply(nDiverge_permutations,2,summary) %>% t %>% as.data.frame() %>% 
       add_column(nAffected = nAffected) %>% add_column (obsDoublets = nDiverge_counts) %>%
-      add_column(pVal = nDiverge_pVals) %>% write.csv(file=paste0(wd,'/tables/','SupplTable01_02_noDiverge.csv'))
+      add_column(pVal = nDiverge_pVals) %>% write.csv(file=paste0(wd,'/tables/','Table_S2_02_noDiverge.csv'))
   }
   
   rm(nDiverge_counts, nDiverge_pVals)
@@ -1530,7 +1534,7 @@ if(do_analyses){
   if(make_plots){
     tempTab <- apply(triPermutations,2,summary) %>% t %>% as.data.frame() %>% 
       add_column(nAffected = nAffected) %>% add_column (obsTriplets = triCounts) %>%
-      add_column(pVal = tri_pVals) %>% write.csv(file=paste0(wd,'/tables/','SupplTable01_03_triplets.csv'))
+      add_column(pVal = tri_pVals) %>% write.csv(file=paste0(wd,'/tables/','Table_S2_03_triplets.csv'))
     rm(tempTab)
   }
   
@@ -1574,7 +1578,7 @@ if(do_analyses){
   if(make_plots){
     tempTab <- apply(quadPermutations,2,summary) %>% t %>% as.data.frame() %>% 
       add_column(nAffected = nAffected) %>% add_column (obsQuadruplets = quadCounts) %>%
-      add_column(pVal = quad_pVals) %>% write.csv(file=paste0(wd,'/tables/','SupplTable01_04_quadruplets.csv'))
+      add_column(pVal = quad_pVals) %>% write.csv(file=paste0(wd,'/tables/','Table_S2_04_quadruplets.csv'))
     rm(tempTab)
   }
   
@@ -1617,7 +1621,7 @@ if(do_analyses){
   if(make_plots){
     tempTab <- apply(quinPermutations,2,summary) %>% t %>% as.data.frame() %>% 
       add_column(nAffected = nAffected) %>% add_column (obsQuintuplet = quinCounts) %>%
-      add_column(pVal = quin_pVals) %>% write.csv(file=paste0(wd,'/tables/','SupplTable01_05_quintuplets.csv'))
+      add_column(pVal = quin_pVals) %>% write.csv(file=paste0(wd,'/tables/','Table_S2_05_quintuplets.csv'))
     rm(tempTab)
   }
   
@@ -1659,7 +1663,7 @@ if(do_analyses){
   if(make_plots){
     tempTab <- apply(sextPermutations,2,summary) %>% t %>% as.data.frame() %>% 
       add_column(nAffected = nAffected) %>% add_column (obsSextuplet = sextCounts) %>%
-      add_column(pVal = sext_pVals) %>% write.csv(file=paste0(wd,'/tables/','SupplTable01_06_sextuplets.csv'))
+      add_column(pVal = sext_pVals) %>% write.csv(file=paste0(wd,'/tables/','Table_S2_06_sextuplets.csv'))
     rm(tempTab)
   }
   
@@ -1676,7 +1680,7 @@ if(make_plots){
   allPerms %>% `colnames<-`(c('p < 0.05/102 Counts','p < 0.05/102 Binomial p-Vals',
                               'p < 0.05 Counts','p < 0.05 Binomial p-Vals',
                               'p < 0.5 Counts','p < 0.5 Binomial p-Vals')) %>%
-    write.csv(file=paste0(wd,'/tables/','Table01_permutationSummaries.csv'))
+    write.csv(file=paste0(wd,'/tables/','Table_1_permutationSummaries.csv'))
 }
 
 rm(nAffected, nIndex, allPerms)
@@ -1760,7 +1764,7 @@ if(do_analyses){
       theme(legend.position = "none", axis.title.x=element_blank(), 
             axis.text.x.bottom = element_text(vjust = 0.9,angle = 45, hjust = 1))
     
-    ggsave(paste0(wd,'/plots/','Figure03_bProps.pdf'),plot = templot,device = NULL,
+    ggsave(paste0(wd,'/plots/','Figure_3_bProps.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 7.08,height = 3,units = c("in"))
     
     rm(templot) 
@@ -1814,7 +1818,7 @@ if(make_plots){
           axis.title.x=element_blank(),
           axis.title.y=element_blank()) + scale_y_discrete(position = 'right')
   
-  ggsave(paste0(wd,'/plots/','Figure02_miniCor.pdf'),plot = templot,device = NULL,
+  ggsave(paste0(wd,'/plots/','Figure_2_miniCor.pdf'),plot = templot,device = NULL,
          path = NULL,scale = 1,width = 3.2,height = 3.2,units = c("in"))
   
   rm(templot, Albert18, temp, miniCor)
@@ -1829,7 +1833,7 @@ if(make_plots){
     geom_boxplot(width=0.1, outlier.shape=NA) + scale_fill_viridis_d() + 
     theme_bw() + theme(axis.text.x.bottom = element_text(vjust = 0.9,angle = 45, hjust = 1))
   
-  ggsave(paste0(wd,'/plots/','SupplFigure02_corDistribs.pdf'),device = NULL,
+  ggsave(paste0(wd,'/plots/','Figure_S2_corDistribs.pdf'),device = NULL,
          path = NULL,scale = 1,width = 6.5,height = 4,units = c("in"))
   
   dev.off()
@@ -1950,7 +1954,7 @@ if(make_plots){
     scale_colour_viridis_d()
   
   # save your plot
-  ggsave(paste0(wd,'/plots/','Figure02_nbrEffect.pdf'),plot = templot,device = NULL,
+  ggsave(paste0(wd,'/plots/','Figure_2_nbrEffect.pdf'),plot = templot,device = NULL,
          path = NULL,scale = 1,width = 4,height = 5,units = c("in"), useDingbats=F)
   
   # remove extraneous objects
@@ -2071,7 +2075,7 @@ if(make_plots){
           axis.text.y = element_text(angle = 45),
           legend.position='left')
   
-  ggsave(paste0(wd,'/plots/','Figure02_metaCor.pdf'),plot = templot,device = NULL,
+  ggsave(paste0(wd,'/plots/','Figure_2_metaCor.pdf'),plot = templot,device = NULL,
          path = NULL,scale = 1,width = 5,height = 5,units = c("in"))
   
   rm(templot,dfCor)
@@ -2186,7 +2190,7 @@ if(make_plots){
     theme(axis.text.x = element_text(angle = 90),legend.title = element_blank()) +
     xlab('Quantile Strength Bin (n to n + 0.05)') + scale_colour_viridis_d() 
   
-  ggsave(paste0(wd,'/plots/','Figure03_agreeStrength.pdf'),plot = templot,device = NULL,
+  ggsave(paste0(wd,'/plots/','Figure_3_agreeStrength.pdf'),plot = templot,device = NULL,
          path = NULL,scale = 1,width = 3,height = 3,units = c("in"))
   
   rm(templot)
@@ -2272,7 +2276,7 @@ if(do_analyses){
       geom_histogram(size=0.5, binwidth=1, position = 'identity', bins=30,alpha=0.4) + theme_bw() + scale_colour_viridis_d() +
       ylab('Count') + theme(legend.position="bottom") + xlab('Doublet Count')
     
-    ggsave(paste0(wd,'/plots/','SupplFigure03_DoubletCount.pdf'),plot = templot,device = NULL,
+    ggsave(paste0(wd,'/plots/','Figure_S3_DoubletCount.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
     rm(templot) 
     
@@ -2286,7 +2290,7 @@ if(do_analyses){
       ylab('Density') + theme(legend.position="right")
     
     
-    ggsave(paste0(wd,'/plots/','Figure04_Distance.pdf'),plot = templot,device = NULL,
+    ggsave(paste0(wd,'/plots/','Figure_4_Distance.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 7.08,height = 2,units = c("in"))
     rm(templot) 
     
@@ -2299,7 +2303,7 @@ if(do_analyses){
       geom_density(size=0.5, alpha=0.4) + theme_bw() + scale_fill_viridis_d() +
       ylab('Density') + theme(legend.position="bottom") + xlab('TFBS')
     
-    ggsave(paste0(wd,'/plots/','SupplFigure03_TFBS.pdf'),plot = templot,device = NULL,
+    ggsave(paste0(wd,'/plots/','Figure_S3_TFBS.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
     rm(templot) 
     
@@ -2313,7 +2317,7 @@ if(do_analyses){
       geom_density(size=0.5, alpha=0.4) + theme_bw() + scale_fill_viridis_d() +
       ylab('Density') + theme(legend.position="bottom") + xlab('Chromatin Baseline')
     
-    ggsave(paste0(wd,'/plots/','SupplFigure03_ChromatinBaseline.pdf'),plot = templot,device = NULL,
+    ggsave(paste0(wd,'/plots/','Figure_S3_ChromatinBaseline.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
     rm(templot) 
     
@@ -2327,7 +2331,7 @@ if(do_analyses){
       geom_density(size=0.5, alpha=0.4) + theme_bw() + scale_fill_viridis_d() +
       ylab('Density') + theme(legend.position="bottom") + xlab('Chromatin Change')
     
-    ggsave(paste0(wd,'/plots/','supplFigure03_ChromatinChange.pdf'),plot = templot,device = NULL,
+    ggsave(paste0(wd,'/plots/','Figure_S3_ChromatinChange.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
     rm(templot)
     
@@ -2402,7 +2406,7 @@ if(do_analyses){
                             labels=c("p < 0.001","p < 0.05","p > 0.05")))
   
   write.csv(fxSim_t3[-(which(names(fxSim_t3) == 'Significance'))] %>% `rownames<-`(c(NULL)),
-            file=paste0(wd,'/tables/','supplTable02_FxSimilarity.csv'))
+            file=paste0(wd,'/tables/','Table_S4_FxSimilarity.csv'))
   
   # Negative binomial model with functional similarity metrics and no TF
   fxNoTF_model <- glm.nb(doubletScore ~ 
@@ -2426,7 +2430,7 @@ if(do_analyses){
                             labels=c("p < 0.001","p < 0.05","p > 0.05")))
   
   write.csv(fxNoTF_t3[-(which(names(fxNoTF_t3) == 'Significance'))] %>% `rownames<-`(c(NULL)),
-            file=paste0(wd,'/tables/','SupplTable02_FxSimilarityNoTF.csv'))
+            file=paste0(wd,'/tables/','Table_S4_FxSimilarityNoTF.csv'))
   
   # Negative binomial model without functional similarity metrics 
   bGlmNb_model <- glm.nb(doubletScore ~ 
@@ -2468,7 +2472,7 @@ if(do_analyses){
   
   # type II for GO
   typeII_GO <- modelGO %>% Anova(type='II') %>% as.data.frame()
-  write.csv(typeII_GO, file=paste0(wd,'/tables/','SupplTable02_GeneOntologyModel.csv'))
+  write.csv(typeII_GO, file=paste0(wd,'/tables/','Table_S4_GeneOntologyModel.csv'))
   
   # GI model
   modelGI <- lm(geneInteractionSimilarity ~ 
@@ -2481,7 +2485,7 @@ if(do_analyses){
   
   # type III for GO
   typeII_GI <- modelGI %>% Anova(type='II') %>% as.data.frame()
-  write.csv(typeII_GI, file=paste0(wd,'/tables/','SupplTable02_GeneInteractionModel.csv'))
+  write.csv(typeII_GI, file=paste0(wd,'/tables/','Table_S4_GeneInteractionModel.csv'))
   
   # Residual correlations betweens residualized GO/GI models and doubletScore
   cor.test(residuals(modelGO),doubletScore,method='spearman')
@@ -2540,7 +2544,7 @@ if(do_analyses){
   if(make_plots){
     
     write.csv(oT3s[-(which(names(oT3s) == 'Significance'))] %>% `rownames<-`(c(NULL)),
-              file=paste0(wd,'/tables/','SupplTable02_MainModels.csv'))
+              file=paste0(wd,'/tables/','Table_S4_MainModels.csv'))
     
     #  EXTRACT THE SIGNS OF THE GLM.NB MODEL
     aCoefs <- bGlmNb_model$coefficients %>% as.data.frame() %>% `names<-`(c('Coefficient')) %>% 
@@ -2599,7 +2603,7 @@ if(do_analyses){
       theme(axis.text.x.bottom = element_text(vjust = 0.9,angle = 45, hjust = 1),
             legend.position = 'right') + xlab(element_blank())
     
-    ggsave(paste0(wd,'/plots/','Figure04_typeIII_results.pdf'),plot = templot,device = cairo_pdf,
+    ggsave(paste0(wd,'/plots/','Figure_4_typeIII_results.pdf'),plot = templot,device = cairo_pdf,
            path = NULL,scale = 1,width = 7.08,height = 4,units = c("in")) 
     
   }
