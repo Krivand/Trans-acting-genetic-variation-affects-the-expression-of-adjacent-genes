@@ -39,7 +39,7 @@
 # # data are held in the raw folder under the name inline-supplementary-material-4.xlsx
 # additional analyses and figures necessary for reviewer response are held in revisionCode
 # # revisionCode should only be run after completion of the mainScript
-# # a new supplementary table_03 was added in the revision script
+# # a new table_S3 was added in the revision script
 # # mainScript now lacks a table_S3 as the old table_S3 is now table_S4
 
 #############################
