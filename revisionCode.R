@@ -13,7 +13,6 @@
 # # you have finished running the code provided in the main body
 # # you can run this on a clean session assuming you did that, should run anyway though 
 # all necessary libraries and funtions are included separately here 
-# don't forget to switch your directory from SELECT_DIRECTORY 
 
 # SET UP WORKING DIRECTORY
 wd <-'SELECT_DIRECTORY'
@@ -280,8 +279,8 @@ if(do_analyses){
 #####################################################
 
 # histogram for observed doublets minus mean doublets 
-# the red bar indicates a difference of 5
-# this is not to be included as a figure but is included in the respnse to our reviewers 
+  # the red bar indicates a difference of 5
+  # this is not to be included as a figure but is included in the respnse to our reviewers 
 if(make_plots){
   temp <- read.csv(file=paste0(wd,'/tables/','File_S2_01_doublets.csv'))
   
@@ -342,8 +341,10 @@ if(make_plots){
     geom_point(aes(x=Excess,y=pVal)) + theme_bw() + 
     ylab(expression('-log'[10]*'(p-value)')) + xlab('Excess of doublets over permutation median') + 
     scale_color_viridis(name="statistics",discrete=TRUE) +
-    theme(legend.position="bottom",legend.title = element_blank())
-  
+    theme(legend.position="bottom",legend.title = element_blank(),
+          axis.text.x = element_text(color='black'),
+          axis.text.y = element_text(color='black'))
+
   ggsave(paste0(wd,'/plots/','Fig_S3_ExcessVsP.pdf'),plot = templot,device = NULL,
          path = NULL,scale = 1,width = 7.08,height = 7,units = c("in"),useDingbats=F)
   
@@ -372,7 +373,7 @@ numGenes <- 1:(nrow(b_mod)-1)
 doublets <- diagonal_grabber(bplus)
 top20 <- which(doublets %in% (sort(doublets,decreasing=T)[1:20] %>% unique()))
 if(check_sanity){
-  # since there are ties, we cut not just the top 20 pairs but the top 23
+ # since there are ties, we cut not just the top 20 pairs but the top 23
   sum(doublets %in% (sort(doublets,decreasing=T)[1:20] %>% unique()))
   # look at what these numbers are
   doublets[which(doublets %in% (sort(doublets,decreasing=T)[1:20] %>% unique()))] %>% sort()
@@ -409,7 +410,7 @@ if(do_analyses){
   # binomial tests at different significance thresholds
   n20Perm['n20','Bonf_Count'] <- sum(n20_pVals < 0.05/length(n20_pVals))
   n20Perm['n20','Bonf_pVal'] <- binom.test(sum(n20_pVals < 0.05/length(n20_pVals)),
-                                           length(n20_pVals),0.05/length(n20_pVals),alternative='greater')$p.value
+                                                 length(n20_pVals),0.05/length(n20_pVals),alternative='greater')$p.value
   n20Perm['n20','Nom_Count'] <- sum(n20_pVals < 0.05)
   n20Perm['n20','Nom_pVal'] <-binom.test(sum(n20_pVals < 0.05),length(n20_pVals),0.05,alternative='greater')$p.value
   n20Perm['n20','Med_Count'] <- sum(n20_pVals < 0.5)
@@ -452,7 +453,7 @@ if(do_analyses){
   tandem <-  PairOrientation == 't'
   convergent <- PairOrientation == 'c'
   
-  
+
   # get correlations between factors   
   factMat <- cbind(divergent, tandem, convergent, TFInventory,Proximity,BaselineChromatin,
                    DeltaChromatin,geneInteractionSimilarity,geneOntologySimilarity) 
@@ -472,16 +473,16 @@ if(do_analyses){
   
   # build the model
   fxNorm_model <- glm.nb(doubletScore ~ 
-                           PairOrientation + 
+                          PairOrientation + 
                            sdize(TFInventory) +
                            sdize(Proximity) +
                            sdize(BaselineChromatin) +
                            sdize(DeltaChromatin) +
                            sdize(geneInteractionSimilarity) +
                            sdize(geneOntologySimilarity) +
-                           offset(log(g1exposure)) + 
-                           offset(log(g2exposure)),
-                         maxit=1000)
+                          offset(log(g1exposure)) + 
+                          offset(log(g2exposure)),
+                        maxit=1000)
   
   fxNorm_t3 <- fxNorm_model %>% 
     Anova(type='III') %>%
@@ -500,7 +501,7 @@ if(do_analyses){
   rm(z,Proximity,doubletScore,PairOrientation,TFInventory,BaselineChromatin,DeltaChromatin, 
      geneOntologySimilarity, geneInteractionSimilarity, 
      exposure, g1exposure, g2exposure,fxNorm_model,fxNorm_t3)
-  
+
 }
 
 ####################

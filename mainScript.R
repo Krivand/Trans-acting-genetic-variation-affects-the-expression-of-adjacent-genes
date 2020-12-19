@@ -417,6 +417,14 @@ norm_wrapper <- function(df){
   return(df)
 }
 
+# get the cormat order by distance
+cormat_order <- function(donor,acceptor){
+  ordr<- as.dist((1-donor)/2) %>% 
+    hclust %>% 
+    (function(x)x$order)
+  return(acceptor[rev(ordr),rev(ordr)])
+}
+
 # gets Spearman correlation matrices 
 spear_cor <- function(dir,x,r=F){
   if(file.exists(paste0(dir,x,'_cor.RData'))){
@@ -698,7 +706,7 @@ rm(temp)
 nucPos <- read.delim(paste0(wd,'/raw/','mmc3.csv'),sep=',')
 
 # Table S3. Normalized Modification Levels (chromatin marks over conditions)
-norMark <- read.delim(paste0(wd,'/raw/','File_S3.csv'),sep=',')
+norMark <- read.delim(paste0(wd,'/raw/','Table_S3.csv'),sep=',')
 
 # keep only the normalized level of marks
 norMark <- norMark[-1,2:157]
@@ -830,7 +838,10 @@ if(make_plots){
       `names<-`(c('Residuals')) %>% add_column(Correction='Batch + OD + Genetics')) %>% 
     ggplot(aes(x=Residuals,fill=Correction)) + 
     geom_density(size=0.5, alpha=0.4) + theme_bw() + scale_fill_viridis_d() + 
-    theme(legend.position="bottom")  + xlab('Residual Gene Expression') + 
+    theme(legend.position="bottom",
+          axis.text.x = element_text(color = "black"),
+          axis.text.y = element_text(color = "black")) + 
+    xlab('Residual Gene Expression') + 
     ylab('Density') + ggtitle('HO')
   
   ggsave(paste0(wd,'/plots/','Fig_S1_ResidualExpressionHO.pdf'),plot = templot,device = NULL,
@@ -844,7 +855,10 @@ if(make_plots){
       `names<-`(c('Residuals')) %>% add_column(Correction='Batch + OD + Genetics')) %>% 
     ggplot(aes(x=Residuals,fill=Correction)) + 
     geom_density(size=0.5, alpha=0.4) + theme_bw() + scale_fill_viridis_d() +
-    theme(legend.position="bottom") + xlab('Residual Gene Expression') + 
+    theme(legend.position="bottom",
+          axis.text.x = element_text(color = "black"),
+          axis.text.y = element_text(color = "black")) + 
+    xlab('Residual Gene Expression') + 
     ylab('Density') + ggtitle('STE2')
   
   ggsave(paste0(wd,'/plots/','Fig_S1_ResidualExpressionSTE2.pdf'),plot = templot,device = NULL,
@@ -1365,7 +1379,8 @@ if(do_analyses){
   if(make_plots){
     
     # min-median normalize everything
-    temp <- rbind(b_nCounts,b_permutations) %>% (function(x)apply(x,2,function(y){return((y-median(y))/max(y))}))
+    temp <- rbind(b_nCounts,b_permutations) %>% 
+      (function(x)apply(x,2,function(y){return((y-median(y))/max(y))}))
     
     # separate the real doublets fromt the permuted doublets
     rDoublets <- temp[1,]
@@ -1391,13 +1406,21 @@ if(do_analyses){
       `names<-`(c('Doublets','Hotspot')) %>%
       add_column(pVals = b_pVals) %>% 
       mutate(category=cut(pVals, breaks=c(-Inf,0.05/102,0.05,Inf), 
-                          labels=c("p < 0.05/102","0.05/102 \u2264 p < 0.05","p \u2265 0.05"))) %>%
-      mutate(Hotspot = ordered(Hotspot, levels = fOrder)) %>% rename(Significance = category)
+                          labels=c("p < 0.05/102","0.05/102 \u2264 p < 0.05",
+                                   "p \u2265 0.05"))) %>%
+      mutate(Hotspot = ordered(Hotspot, levels = fOrder)) %>% 
+      rename(Significance = category)
     
-    templot <- ggplot() + geom_boxplot(data=pDoublets,aes(x=Hotspot,y=Doublets),width=0.5,outlier.size=0.4, outlier.shape=15) +
-      geom_point(data=rDoublets,aes(x=Hotspot,y=Doublets,colour=Significance),size=0.8) + 
+    templot <- ggplot() + 
+      geom_boxplot(data=pDoublets,
+                   aes(x=Hotspot,y=Doublets),
+                   width=0.5,outlier.size=0.4, outlier.shape=15) +
+      geom_point(data=rDoublets,
+                 aes(x=Hotspot,y=Doublets,colour=Significance),size=0.8) + 
       theme_bw() + scale_color_manual(values=viridis(6)[c(1,3,5)]) + 
-      theme(axis.text.x=element_blank(),legend.position = 'bottom') +
+      theme(axis.text.x=element_blank(),
+            axis.text.y = element_text(color = "black"),
+            legend.position = 'bottom') +
       ylab('Normalized doublet count') + xlab('Ordered hotspots')
     
     
@@ -1746,30 +1769,6 @@ if(do_analyses){
   
   rm(bnPosProps,freqNegProps,bnZeroProps,bnPvals,bnMeans)
   
-  # plot proportions of directions by position from frequency matrix
-  if(make_plots){
-    
-    templot <- lapply(c(neighbor_grab,nonneighbor_grab),function(x)x(bsmpl,chrkey)) %>% 
-      sapply(function(x){
-        c(sum(x>0),sum(x==0),sum(x<0))
-      }) %>% `colnames<-`(c('Adjacent','Non-adjacent')) %>%
-      apply(2,function(x)x/sum(x)) %>% as.data.frame() %>% 
-      add_column(Direction = c('Same Direction','Zero','Different Direction')) %>%
-      mutate(Direction = ordered(Direction, levels = c('Same Direction','Different Direction','Zero'))) %>%
-      gather(key='Position',value='Proportion',1:2) %>% 
-      mutate(Position = ordered(Position, levels = c('Non-adjacent','Adjacent'))) %>%
-      ggplot(aes(x=Position,y=Proportion,fill=Position)) +
-      geom_bar(stat='Identity',  colour="black") + theme_bw() + ylim(c(0,0.6)) +
-      facet_wrap('Direction') + scale_fill_grey() +
-      theme(legend.position = "none", axis.title.x=element_blank(), 
-            axis.text.x.bottom = element_text(vjust = 0.9,angle = 45, hjust = 1))
-    
-    ggsave(paste0(wd,'/plots/','Fig_3_bProps.pdf'),plot = templot,device = NULL,
-           path = NULL,scale = 1,width = 7.08,height = 3,units = c("in"))
-    
-    rm(templot) 
-  }
-  
 }
 
 #######################
@@ -1813,7 +1812,9 @@ if(make_plots){
           axis.ticks.y = element_blank(),
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
-          axis.text.x.bottom = element_text(vjust = 1.1,angle = 90, hjust = 1),
+          axis.text.y = element_text(color = "black"),
+          axis.text.x.bottom = element_text(
+            vjust = 1.1,angle = 90, hjust = 1,color='black'),
           legend.position='bottom',
           axis.title.x=element_blank(),
           axis.title.y=element_blank()) + scale_y_discrete(position = 'right')
@@ -1821,7 +1822,7 @@ if(make_plots){
   ggsave(paste0(wd,'/plots/','Fig_2_miniCor.pdf'),plot = templot,device = NULL,
          path = NULL,scale = 1,width = 3.2,height = 3.2,units = c("in"))
   
-  rm(templot, Albert18, temp, miniCor)
+  rm(templot, miniCor)
   
 }
 
@@ -1831,12 +1832,14 @@ if(make_plots){
     (function(x)gather(x,1:length(x),key='Source',value='Rho')) %>% 
     ggplot(aes(x=Source,y=Rho)) + geom_violin(aes(fill=Source)) +
     geom_boxplot(width=0.1, outlier.shape=NA) + scale_fill_viridis_d() + 
-    theme_bw() + theme(axis.text.x.bottom = element_text(vjust = 0.9,angle = 45, hjust = 1))
+    theme_bw() + theme(axis.text.x.bottom = element_text(
+      vjust = 0.9,angle = 45, hjust = 1,color = "black"),
+      axis.text.y = element_text(color='black'))
   
   ggsave(paste0(wd,'/plots/','Fig_S4_corDistribs.pdf'),device = NULL,
          path = NULL,scale = 1,width = 7.04,height = 4,units = c("in"))
   
-  dev.off()
+  rm(templot)
 }
 
 # look at proportion of positive correlations
@@ -1911,12 +1914,13 @@ if(make_plots){
     lapply(as.data.frame) %>% # get into dataframe format
     lapply(function(x)add_column(x,Position=c('Adjacent','Non-adjacent'))) %>%
     lapply(function(x)gather(x,key='Source',value='Value',1:(ncol(x)-1))) %>%
-    (function(a)mapply(function(x,y)add_column(x,Metric=y),a,c('Negative','All','Positive'))) %>%
+    (function(a)mapply(function(x,y)
+      add_column(x,Metric=y),a,c('Negative','All','Positive'))) %>%
     apply(2,cbind) %>%
     lapply(function(x)do.call(cbind,x)) %>%
     (function(x)do.call(rbind,x)) %>%
     as.data.frame %>%
-    `names<-`(c('Position','Source','Value','Metric')) # assure your names are correct
+    `names<-`(c('Position','Source','Value','Metric')) # assure names are correct
   
   # make sure some values are not factors
   rhoSplit$Value <- rhoSplit$Value %>% as.character() %>% as.numeric()
@@ -1949,7 +1953,9 @@ if(make_plots){
     geom_blank(data = limTemp,aes(y=Value,x=Position)) +
     theme_bw() + theme(axis.title.x=element_blank(),
                        legend.title = element_blank(),
-                       axis.text.x = element_text(angle=45,hjust=1.1,vjust=1)) + 
+                       axis.text.y = element_text(color = "black"),
+                       axis.text.x = element_text(
+                         angle=45,hjust=1.1,vjust=1,color='black')) + 
     facet_wrap(~Metric, scales='free_y') + 
     scale_colour_viridis_d()
   
@@ -2025,29 +2031,27 @@ if(do_analyses){
 if(make_plots){
   
   # turn one matrix into an upper and the other into a lower triangle dataframe
+  # order of both is enforced by the neighbor
   
-  dfCor1 <- melt(metaCors$non$r %>% 
-                   (function(x){
-                     x[lower.tri(x,diag=T)]<- NA
-                     return(x)
-                   }), na.rm=T)
+  dfCor1 <- metaCors$non$r %>%
+    (function(x)cormat_order(metaCors$nbr$r,x)) %>%
+    (function(x){
+      x[lower.tri(x,diag=T)]<- NA
+      return(x)
+    }) %>% melt(na.rm=T)
   
-  dfCor2 <- melt(metaCors$nbr$r %>% 
-                   (function(x){
-                     x[upper.tri(x,diag=T)]<- NA
-                     return(x)
-                   }), na.rm=T)
+  dfCor2 <- metaCors$nbr$r %>% 
+    (function(x)cormat_order(metaCors$nbr$r,x)) %>%
+    (function(x){
+      x[upper.tri(x,diag=T)]<- NA
+      return(x)
+    }) %>% melt(na.rm=T)
   
   # merge the upper and lower triangles into a single dataframe and name Rho correctly
   dfCor <- rbind(dfCor1, dfCor2) %>% rename(Rho=value)
   
   # remove the objects used to generate dfCor
   rm(dfCor1,dfCor2)
-  
-  
-  # Correct your order
-  dfCor$Var1 <- ordered(dfCor$Var1, levels = sort(as.character(unique(dfCor$Var1))))
-  dfCor$Var2 <- ordered(dfCor$Var2, levels = sort(as.character(unique(dfCor$Var2))))
   
   diverge <- scale_fill_gradient2(
     low = "#440154FF",
@@ -2071,8 +2075,11 @@ if(make_plots){
           axis.ticks.y = element_blank(),
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
-          axis.text.x.bottom = element_text(vjust = 1.1,angle = 45, hjust = 1),
-          axis.text.y = element_text(angle = 45),
+          axis.text.x.bottom = element_text(
+            vjust = 1.1,angle = 45, 
+            hjust = 1, color = "black"),
+          axis.text.y = element_text(angle = 45,
+                                     color = "black"),
           legend.position='left')
   
   ggsave(paste0(wd,'/plots/','Fig_2_metaCor.pdf'),plot = templot,device = NULL,
@@ -2118,8 +2125,34 @@ if(do_analyses){
   median(bTestR$fNon) %>% print()
   median(bTestR$fNbr) %>% print()
   wilcox.test(bTestR$fNbr,bTestR$fNon,paired=T) %>% print()
-  
+ 
 }
+
+# plot the comparison of coexpression and frequency 
+if(make_plots){
+  
+  templot <- sapply(bTests,function(x)sapply(x,function(y)y$estimate))  %>% as.data.frame()
+  
+  templot$Source <- sapply(rownames(temp),function(x)substr(x,1,nchar(x)-4))
+  
+  templot <- templot %>% as.data.frame %>% (function(x)gather(x,1:(ncol(x)-1),key='Position',value='Rho')) %>% 
+    mutate(Position = recode_factor(Position,fNon='Non-Neighbor',fNbr='Neighbor'))
+  
+  templot <- ggplot(templot) + geom_boxplot(aes(y=Rho,x=Position),fill='grey') + 
+    geom_line(aes(y=Rho,x=Position,group=Source, colour=Source)) +
+    geom_point(aes(y=Rho,x=Position,colour=factor(Source)),size=2) +
+    scale_color_viridis_d() + 
+    theme_bw() + theme() +
+    theme(axis.text.x.bottom = element_text(vjust = 0.9,angle = 45, hjust = 1,color='black'),
+          axis.text.y = element_text(color='black'),
+          axis.title.x=element_blank())
+  
+  ggsave(paste0(wd,'/plots/','Fig_3_bCorRho.pdf'),plot = templot,device = NULL,
+         path = NULL,scale = 1,width = 3,height = 3,units = c("in"), useDingbats=F)
+  
+  rm(templot)
+}
+
 
 rm(bTestP, bTestR, bTests)
 
@@ -2187,7 +2220,9 @@ if(make_plots){
   # plot data
   templot <- ggplot(temp,aes(y=Rho,x=Cutoff)) + geom_boxplot(fill='grey',outlier.shape=NA) +
     theme_bw() + geom_line(aes(group=factor(Source), colour=Source),show.legend=F) + 
-    theme(axis.text.x = element_text(angle = 90),legend.title = element_blank()) +
+    theme(axis.text.x = element_text(angle = 90,color='black'),
+          axis.text.y = element_text(color='black'),
+          legend.title = element_blank()) +
     xlab('Quantile Strength Bin (n to n + 0.05)') + scale_colour_viridis_d() 
   
   ggsave(paste0(wd,'/plots/','Fig_3_agreeStrength.pdf'),plot = templot,device = NULL,
@@ -2202,6 +2237,7 @@ rm(cor_mats, bcor_quant, bCorR, bCorP, bsmpl)
 #########################
 # INDIVIDUAL MECHANISMS #
 #########################
+
 if(do_analyses){
   
   # analyze TF similarity 
@@ -2274,7 +2310,10 @@ if(do_analyses){
       mutate(Orientation = ordered(Orientation, levels = c('Divergent','Tandem','Convergent'))) %>% 
       ggplot(aes(x=PairScore,fill=Orientation,colour=Orientation)) + 
       geom_histogram(size=0.5, binwidth=1, position = 'identity', bins=30,alpha=0.4) + theme_bw() + scale_colour_viridis_d() +
-      ylab('Count') + theme(legend.position="bottom") + xlab('Doublet Count')
+      ylab('Count') + theme(legend.position="bottom",
+                            axis.text.x=element_text(color='black'),
+                            axis.text.y=element_text(color='black')) + 
+      xlab('Doublet Count')
     
     ggsave(paste0(wd,'/plots/','Fig_S5_DoubletCount.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
@@ -2287,7 +2326,9 @@ if(do_analyses){
       mutate(Orientation = ordered(Orientation, levels = c('Divergent','Tandem','Convergent'))) %>% 
       ggplot(aes(x=Distance,fill=Orientation)) + 
       geom_density(size=0.5, alpha=0.4) + theme_bw() + xlim(0,1e4) + scale_fill_viridis_d() +
-      ylab('Density') + theme(legend.position="right")
+      ylab('Density') + theme(legend.position="right",
+                              axis.text.x=element_text(color='black'),
+                              axis.text.y=element_text(color='black'))
     
     
     ggsave(paste0(wd,'/plots/','Fig_4_Distance.pdf'),plot = templot,device = NULL,
@@ -2301,7 +2342,10 @@ if(do_analyses){
       mutate(Orientation = ordered(Orientation, levels = c('Divergent','Tandem','Convergent'))) %>% 
       ggplot(aes(x=jacTF,fill=Orientation,color=Orientation)) + 
       geom_density(size=0.5, alpha=0.4) + theme_bw() + scale_fill_viridis_d() +
-      ylab('Density') + theme(legend.position="bottom") + xlab('TFBS')
+      ylab('Density') + theme(legend.position="bottom",
+                              axis.text.x=element_text(color='black'),
+                              axis.text.y=element_text(color='black')) + 
+      xlab('TFBS')
     
     ggsave(paste0(wd,'/plots/','Fig_S5_TFBS.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
@@ -2315,7 +2359,10 @@ if(do_analyses){
       mutate(Orientation = ordered(Orientation, levels = c('Divergent','Tandem','Convergent'))) %>% 
       ggplot(aes(x=Permissiveness,fill=Orientation,color=Orientation)) + 
       geom_density(size=0.5, alpha=0.4) + theme_bw() + scale_fill_viridis_d() +
-      ylab('Density') + theme(legend.position="bottom") + xlab('Chromatin Baseline')
+      ylab('Density') + theme(legend.position="bottom",
+                              axis.text.x=element_text(color='black'),
+                              axis.text.y=element_text(color='black')) + 
+      xlab('Chromatin Baseline')
     
     ggsave(paste0(wd,'/plots/','Fig_S5_ChromatinBaseline.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
@@ -2329,7 +2376,10 @@ if(do_analyses){
       mutate(Orientation = ordered(Orientation, levels = c('Divergent','Tandem','Convergent'))) %>% 
       ggplot(aes(x=ChromatinSimilarity,fill=Orientation,color=Orientation)) + 
       geom_density(size=0.5, alpha=0.4) + theme_bw() + scale_fill_viridis_d() +
-      ylab('Density') + theme(legend.position="bottom") + xlab('Chromatin Change')
+      ylab('Density') + theme(legend.position="bottom",,
+                              axis.text.x=element_text(color='black'),
+                              axis.text.y=element_text(color='black')) + 
+      xlab('Chromatin Change')
     
     ggsave(paste0(wd,'/plots/','Fig_S5_ChromatinChange.pdf'),plot = templot,device = NULL,
            path = NULL,scale = 1,width = 3.5,height = 3,units = c("in"))
@@ -2601,6 +2651,7 @@ if(do_analyses){
       ggplot(aes(Factor,y=LR_Chisq,fill=Significance)) + geom_bar(stat="identity") + theme_bw() +
       facet_wrap('Orientation', scales = "free_x") + scale_fill_grey() + ylab('Signed -2ln(Likelihood Ratio)') +
       theme(axis.text.x.bottom = element_text(vjust = 0.9,angle = 45, hjust = 1, color = "black"),
+            axis.text.y = element_text(color='black'),
             legend.position = 'right') + xlab(element_blank())
     
     ggsave(paste0(wd,'/plots/','Fig_4_typeIII_results.pdf'),plot = templot,device = cairo_pdf,
